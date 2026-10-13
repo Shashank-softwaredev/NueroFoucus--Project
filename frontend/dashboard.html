@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#f4f7f3"><title>Your workspace — NeuroFocus</title><link rel="stylesheet" href="/static/style.css"></head>
+<body>
+  <header class="topbar"><a class="brand-link" href="/"><span class="brand-symbol">NF</span> NeuroFocus</a><div class="workspace-badge"><span class="online-dot"></span> Interview workspace</div><div id="nav-session"></div></header>
+  <main class="workspace rise-in">
+    <section class="workspace-head"><div><div class="eyebrow">Your workspace</div><h1 id="greeting">Welcome back</h1><p id="workspace-caption">Set up your next conversation.</p></div><div class="workspace-badge"><span class="session-dot"></span><span id="role-label">Secure session</span></div></section>
+    <section class="workspace-grid">
+      <article class="action-card primary" id="hr-block" hidden>
+        <div class="card-icon" aria-hidden="true">↗</div><h2>Host an interview</h2><p>Create a private room and share its short code with the candidate. Only one HR host and one candidate can join.</p>
+        <button class="button secondary" id="generate-btn" type="button">Create interview room <span aria-hidden="true">→</span></button>
+        <div class="room-code" id="generated-room" hidden></div><div class="form-error" id="hr-error" role="alert"></div>
+        <div class="join-row" id="hr-room-actions" hidden><button class="button secondary small" id="copy-room" type="button">Copy code</button><button class="button small" id="enter-generated" type="button">Open room</button></div>
+      </article>
+      <article class="action-card" id="candidate-block" hidden>
+        <div class="card-icon" aria-hidden="true">⌁</div><h2>Join your interview</h2><p>Enter the room code shared by the HR host. Check your camera and microphone before joining.</p>
+        <form id="join-form"><label class="form-label" for="room-input">Interview room code</label><div class="join-row"><input id="room-input" name="room" maxlength="9" autocomplete="off" placeholder="NF-XXXXXX" aria-describedby="room-error" required><button class="button" type="submit">Continue <span aria-hidden="true">→</span></button></div><div class="form-error" id="room-error" role="alert"></div></form>
+      </article>
+      <article class="action-card" id="welcome-card" hidden><div class="card-icon" aria-hidden="true">✳</div><h2>Your next conversation starts here</h2><p>NeuroFocus gives you a comfortable place to meet, discuss questions, and share work with the interviewer.</p><div class="subtle-notice">You’ll see a camera and microphone check before joining. Video is live and isn’t recorded by this prototype.</div></article>
+    </section>
+    <section class="feature-row" aria-label="Interview room features">
+      <article class="feature-card"><div class="card-icon" aria-hidden="true">◉</div><h3>Ready before you join</h3><p>Choose your camera and mic in a private preview lobby.</p></article>
+      <article class="feature-card"><div class="card-icon" aria-hidden="true">▤</div><h3>Questions in the room</h3><p>Share coding, aptitude, company, and role questions with candidate responses.</p></article>
+      <article class="feature-card"><div class="card-icon" aria-hidden="true">⌘</div><h3>People stay in charge</h3><p>Connection and room events help HR review the session; no automated candidate rejection.</p></article>
+    </section>
+    <p class="subtle-notice">For fair interviews, HR makes the hiring decision. Technical events (such as connection changes) can have ordinary explanations and are not proof of misconduct.</p>
+  </main>
+  <script src="/static/app.js"></script><script>
+    const auth=requireAuth();
+    if(auth){
+      setActiveNav();
+      document.getElementById("greeting").textContent=`Good to see you, ${auth.name.split(" ")[0]}`;
+      document.getElementById("role-label").textContent=auth.role==="hr"?"HR host account":"Candidate account";
+      document.getElementById("workspace-caption").textContent=auth.role==="hr"?"Create a room when you’re ready to meet.":"Join your room when your interviewer shares the code.";
+      document.getElementById(auth.role==="hr"?"hr-block":"candidate-block").hidden=false;
+      if(auth.role==="candidate")document.getElementById("welcome-card").hidden=false;
+    }
+    let currentRoom="";
+    document.getElementById("generate-btn").addEventListener("click",async()=>{
+      const button=document.getElementById("generate-btn"),error=document.getElementById("hr-error");error.textContent="";button.disabled=true;button.textContent="Creating a private room…";
+      try{const result=await apiPost("/api/rooms",{});currentRoom=result.room;document.getElementById("generated-room").textContent=currentRoom;document.getElementById("generated-room").hidden=false;document.getElementById("hr-room-actions").hidden=false;button.textContent="Create another room";button.disabled=false;}
+      catch(err){error.textContent=err.message;button.disabled=false;button.textContent="Create interview room →";}
+    });
+    document.getElementById("copy-room").addEventListener("click",async(event)=>{try{await navigator.clipboard.writeText(currentRoom);event.currentTarget.textContent="Copied";setTimeout(()=>event.currentTarget.textContent="Copy code",1600);}catch{document.getElementById("hr-error").textContent=`Copy this code: ${currentRoom}`;}});
+    document.getElementById("enter-generated").addEventListener("click",()=>{if(currentRoom)window.location.href=`/room.html?room=${encodeURIComponent(currentRoom)}`;});
+    document.getElementById("room-input").addEventListener("input",(event)=>{event.currentTarget.value=event.currentTarget.value.toUpperCase();});
+    document.getElementById("join-form").addEventListener("submit",(event)=>{event.preventDefault();const code=document.getElementById("room-input").value.trim().toUpperCase(),error=document.getElementById("room-error");if(!/^NF-[A-HJ-NP-Z2-9]{6}$/.test(code)){error.textContent="Check the six-character room code and try again.";return;}window.location.href=`/room.html?room=${encodeURIComponent(code)}`;});
+  </script>
+</body>
+</html>

@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#14251f"><title>Interview room — NeuroFocus</title><link rel="stylesheet" href="/static/style.css?v=20261014-1"></head>
+<body class="meeting-body">
+  <header class="meeting-topbar">
+    <a class="brand-link" href="/dashboard.html"><span class="brand-symbol">NF</span> NeuroFocus</a>
+    <div class="meeting-meta"><span class="room-pill" id="room-pill">Room —</span><span class="connection-pill" id="conn-pill">Not connected</span><div id="nav-session"></div></div>
+  </header>
+  <div class="prejoin-wrap" id="prejoin">
+    <section class="prejoin-card">
+      <header class="prejoin-header"><div class="eyebrow">Before you join</div><h1>Check your setup</h1><p>Choose your camera and microphone, check your preview, and join when you’re ready. Your browser will ask you to allow camera and microphone access.</p></header>
+      <div class="prejoin-grid">
+        <div class="preview-frame"><video id="preview-video" autoplay muted playsinline></video><div class="preview-caption" id="preview-name">Camera preview</div></div>
+        <div class="device-checks">
+          <div><label for="camera-select">Camera</label><select id="camera-select" aria-label="Choose camera"></select></div>
+          <div><label for="microphone-select">Microphone</label><select id="microphone-select" aria-label="Choose microphone"></select></div>
+          <div class="permission-status" id="permission-status" role="status">Checking camera and microphone…</div>
+          <button class="button secondary small" id="retry-media" type="button">Refresh devices</button>
+          <div class="camera-lock" id="camera-lock">Both participants share live video by default. Either person can pause and resume their camera during the interview.</div>
+        </div>
+      </div>
+      <div class="prejoin-footer">
+        <label class="consent-check"><input id="consent-check" type="checkbox"><span>I understand my camera and microphone are shared live with the other participant. No video or audio recording is stored by this prototype.</span></label>
+        <button class="button" id="join-room-btn" type="button" disabled>Join interview <span aria-hidden="true">→</span></button>
+      </div>
+    </section>
+  </div>
+  <main class="meeting-shell" id="call-shell" hidden>
+    <section class="stage-column">
+      <div class="room-message" id="room-message" role="status" hidden></div>
+      <button class="button small audio-unlock" id="enable-audio" type="button" hidden>Enable interview audio</button>
+      <div class="video-stage">
+        <div class="video-tile" id="local-tile"><video id="local-video" autoplay muted playsinline class="local-mirror"></video><div class="video-placeholder" id="local-placeholder"><span class="avatar-mark" id="local-avatar">NF</span><span>Starting your camera…</span></div><button class="button small video-retry" id="reconnect-camera" type="button" hidden>Reconnect camera</button><span class="video-tag"><span class="tag-live"></span><span id="local-tag">You</span></span><span class="video-status" id="local-video-status"></span></div>
+        <div class="video-tile" id="remote-tile"><video id="remote-video" autoplay playsinline></video><div class="video-placeholder" id="remote-placeholder"><span class="avatar-mark">…</span><span id="remote-waiting">Waiting for your interview partner</span></div><span class="video-tag"><span class="tag-live" id="remote-live-dot" hidden></span><span id="remote-tag">Interview partner</span></span><span class="video-status" id="remote-video-status"></span></div>
+        <div class="video-tile screen-tile" id="remote-screen-tile" hidden><video id="remote-screen-video" autoplay playsinline></video><span class="video-tag">Shared screen · <span id="screen-sharer">Participant</span></span></div>
+        <div class="video-tile screen-tile" id="local-screen-tile" hidden><video id="local-screen-video" autoplay muted playsinline></video><span class="video-tag">Your shared screen</span></div>
+      </div>
+      <div class="controls-bar" aria-label="Interview controls">
+        <button class="control" id="mic-btn" type="button" aria-label="Mute microphone" aria-pressed="false"><span class="glyph" aria-hidden="true">◖</span><small>Mute</small></button>
+        <button class="control" id="cam-btn" type="button" aria-label="Turn camera off" aria-pressed="false"><span class="glyph" aria-hidden="true">▣</span><small>Camera</small></button>
+        <button class="control" id="share-btn" type="button" aria-label="Share screen" aria-pressed="false"><span class="glyph" aria-hidden="true">▱</span><small>Share screen</small></button>
+        <button class="control" id="questions-shortcut" type="button" aria-label="Open interview questions"><span class="glyph" aria-hidden="true">▤</span><small>Questions</small></button>
+        <button class="control leave" id="leave-btn" type="button" aria-label="Leave interview"><span class="glyph" aria-hidden="true">↗</span><small>Leave</small></button>
+      </div>
+    </section>
+    <aside class="meeting-sidebar">
+      <header class="sidebar-head"><h2>Interview room</h2><p id="sidebar-caption">A private space for a thoughtful conversation.</p></header>
+      <nav class="sidebar-tabs" aria-label="Room tools">
+        <button id="tab-btn-log" data-tab="log" type="button">Session log</button>
+        <button id="tab-btn-questions" data-tab="questions" type="button">Questions</button>
+        <button id="tab-btn-chat" data-tab="chat" type="button">Chat</button>
+      </nav>
+      <section class="tab-panel" id="tab-log"><div class="log-actions"><span class="signal-count" id="quality-summary">Waiting for connection</span><button class="button tertiary small" id="export-log" type="button">Export</button></div><div class="event-list" id="log-list" aria-live="polite"><div class="event-empty">Room connection events and technical status appear here for the HR host. No call media is recorded.</div></div></section>
+      <section class="tab-panel" id="tab-questions"><div class="qa-list" id="qa-list" aria-live="polite"><div class="qa-empty" id="qa-empty">Questions shared by HR will appear here.</div></div>
+        <form class="composer" id="question-form" hidden><select id="question-category" aria-label="Question type"><option value="coding">Coding</option><option value="aptitude">Aptitude</option><option value="company">Company</option><option value="behavioral">Role &amp; experience</option></select><textarea id="question-text" maxlength="4000" placeholder="Write a question for the candidate…" required></textarea><button class="button small" type="submit">Send</button></form>
+      </section>
+      <section class="tab-panel" id="tab-chat"><div class="chat-messages" id="chat-messages" aria-live="polite"></div><form class="composer" id="chat-form"><input id="chat-input" maxlength="1000" autocomplete="off" aria-label="Message" placeholder="Write a message…"><button class="button small" type="submit">Send</button></form></section>
+    </aside>
+  </main>
+  <script src="/static/app.js?v=20261014-1"></script><script src="/static/room.js?v=20261013-webrtc-3"></script>
+</body>
+</html>

@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#f4f7f3"><title>Create your account — NeuroFocus</title><link rel="stylesheet" href="/static/style.css"></head>
+<body>
+  <header class="topbar"><a class="brand-link" href="/"><span class="brand-symbol">NF</span> NeuroFocus</a><div id="nav-session"></div></header>
+  <main class="auth-page">
+    <section class="auth-frame">
+      <aside class="auth-art"><a class="brand-link" href="/"><span class="brand-symbol">NF</span> NeuroFocus</a><div><div class="eyebrow">A thoughtful first step</div><h1>Good work starts with a good conversation.</h1><p>Create an account to host or join a private, one-to-one interview. Your role sets up the right tools for your side of the conversation.</p></div><div class="auth-art-bottom">A shared space for better hiring conversations.</div></aside>
+      <div class="auth-panel">
+        <h2>Create your account</h2><p class="sub">A few details and you’ll be ready to meet.</p>
+        <div class="role-toggle" role="group" aria-label="Choose your account role"><button type="button" id="role-hr" class="active" aria-pressed="true">I’m hiring</button><button type="button" id="role-candidate" aria-pressed="false">I’m interviewing</button></div>
+        <form id="register-form">
+          <div class="field"><label class="form-label" for="name">Full name</label><input id="name" name="name" autocomplete="name" maxlength="80" required placeholder="Your name"></div>
+          <div class="field"><label class="form-label" for="email">Work or contact email</label><input id="email" name="email" type="email" autocomplete="email" maxlength="254" required placeholder="you@company.com"></div>
+          <div class="field"><label class="form-label" for="password">Password</label><input id="password" name="password" type="password" autocomplete="new-password" minlength="8" maxlength="72" required placeholder="At least 8 characters"></div>
+          <div class="field" id="hr-invite-wrap"><label class="form-label" for="hr-invite-code">HR invite code</label><input id="hr-invite-code" name="hr_invite_code" type="password" autocomplete="off" maxlength="128" placeholder="Required on the deployed site"></div>
+          <div class="form-error" id="error" role="alert"></div><button class="button auth-submit" id="submit-btn" type="submit">Create account <span aria-hidden="true">→</span></button>
+        </form>
+        <p class="auth-switch">Already have an account? <a href="/login.html">Sign in</a></p>
+        <div class="auth-assurance"><span class="online-dot"></span> Your password is protected. Interview media isn’t recorded.</div>
+      </div>
+    </section>
+  </main>
+  <script src="/static/app.js"></script>
+  <script>
+    setActiveNav();
+    let selectedRole = "hr";
+    const roleHr = document.getElementById("role-hr");
+    const roleCandidate = document.getElementById("role-candidate");
+    function setRole(role) {
+      selectedRole = role;
+      roleHr.classList.toggle("active", role === "hr"); roleHr.setAttribute("aria-pressed", String(role === "hr"));
+      roleCandidate.classList.toggle("active", role === "candidate"); roleCandidate.setAttribute("aria-pressed", String(role === "candidate"));
+      document.getElementById("hr-invite-wrap").hidden = role !== "hr";
+    }
+    roleHr.addEventListener("click", () => setRole("hr"));
+    roleCandidate.addEventListener("click", () => setRole("candidate"));
+    document.getElementById("register-form").addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const error = document.getElementById("error"), button = document.getElementById("submit-btn");
+      error.textContent = ""; button.disabled = true; button.textContent = "Creating your account…";
+      try {
+        const data = await apiPost("/api/register", {name:document.getElementById("name").value.trim(),email:document.getElementById("email").value.trim(),password:document.getElementById("password").value,role:selectedRole,hr_invite_code:document.getElementById("hr-invite-code").value});
+        saveAuth(data); window.location.href = "/dashboard.html";
+      } catch (err) { error.textContent = err.message; button.disabled = false; button.innerHTML = 'Create account <span aria-hidden="true">→</span>'; }
+    });
+  </script>
+</body>
+</html>

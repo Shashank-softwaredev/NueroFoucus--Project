@@ -1,0 +1,36 @@
+services:
+  - type: web
+    name: neurofocus
+    runtime: python
+    plan: free
+    region: oregon
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: ENVIRONMENT
+        value: production
+      - key: PYTHON_VERSION
+        value: 3.12.11
+      - key: NEUROFOCUS_SECRET
+        generateValue: true
+      - key: DATABASE_URL
+        fromDatabase:
+          name: neurofocus-db
+          property: connectionString
+      - key: NEUROFOCUS_TURN_URLS
+        sync: false
+      - key: NEUROFOCUS_TURN_USERNAME
+        sync: false
+      - key: NEUROFOCUS_TURN_CREDENTIAL
+        sync: false
+      - key: NEUROFOCUS_HR_INVITE_CODE
+        sync: false
+
+databases:
+  - name: neurofocus-db
+    plan: free
+    region: oregon
+    databaseName: neurofocus
+    user: neurofocus
